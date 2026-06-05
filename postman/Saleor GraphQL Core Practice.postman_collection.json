@@ -1,0 +1,682 @@
+{
+  "info": {
+    "_postman_id": "96bedb2f-af3c-4a4f-98c5-3d553876f6f9",
+    "name": "Saleor GraphQL Core Practice",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53617374",
+    "_collection_link": "https://go.postman.co/collection/53617374-96bedb2f-af3c-4a4f-98c5-3d553876f6f9?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01_shop_query",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"{ shop { name } }\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02_wrong_query",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response has graphql errors\", function () {\r",
+              "    pm.expect(res.errors).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"error message mentions wrongField\", function () {\r",
+              "    pm.expect(res.errors[0].message).to.include(\"wrongField\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"{ wrongField }\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03_channels_query_without_token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response has permission errors\", function () {\r",
+              "    pm.expect(res.errors).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"channels is null without staff token\", function () {\r",
+              "    pm.expect(res.data.channels).to.eql(null);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"error message mentions permission\", function () {\r",
+              "    pm.expect(res.errors[0].message).to.include(\"AUTHENTICATED_STAFF_USER\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"query { channels { id slug name isActive } }\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04_token_create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"tokenCreate has no business errors\", function () {\r",
+              "    pm.expect(res.data.tokenCreate.errors).to.be.an(\"array\");\r",
+              "    pm.expect(res.data.tokenCreate.errors.length).to.eql(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"access token exists\", function () {\r",
+              "    pm.expect(res.data.tokenCreate.token).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"refresh token exists\", function () {\r",
+              "    pm.expect(res.data.tokenCreate.refreshToken).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"access_token\", res.data.tokenCreate.token);\r",
+              "pm.environment.set(\"refresh_token\", res.data.tokenCreate.refreshToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"mutation { tokenCreate(email: \\\"admin@example.com\\\", password: \\\"admin\\\") { token refreshToken user { id email } errors { field message code } } }\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05_channels_query_with_token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response has no graphql errors\", function () {\r",
+              "    pm.expect(res.errors).to.be.undefined;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response has channels array\", function () {\r",
+              "    pm.expect(res.data.channels).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"at least one channel exists\", function () {\r",
+              "    pm.expect(res.data.channels.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"first channel has slug\", function () {\r",
+              "    pm.expect(res.data.channels[0].slug).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"channel\", res.data.channels[0].slug);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer  {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"query { channels { id slug name isActive } }\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "06_me_query",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response has no graphql errors\", function () {\r",
+              "    pm.expect(res.errors).to.be.undefined;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"me exists\", function () {\r",
+              "    pm.expect(res.data.me).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"user email exists\", function () {\r",
+              "    pm.expect(res.data.me.email).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"user is staff\", function () {\r",
+              "    pm.expect(res.data.me.isStaff).to.eql(true);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer  {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"query { me { id email firstName lastName isStaff } }\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07_token_refresh",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"tokenRefresh has no business errors\", function () {\r",
+              "    pm.expect(res.data.tokenRefresh.errors).to.be.an(\"array\");\r",
+              "    pm.expect(res.data.tokenRefresh.errors.length).to.eql(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"new access token exists\", function () {\r",
+              "    pm.expect(res.data.tokenRefresh.token).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"access_token\", res.data.tokenRefresh.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer  {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"mutation { tokenRefresh(refreshToken: \\\"{{refresh_token}}\\\") { token errors { field message code } } }\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08_products_query",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response has no graphql errors\", function () {\r",
+              "    pm.expect(res.errors, JSON.stringify(res.errors)).to.be.undefined;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"products exists\", function () {\r",
+              "    pm.expect(res.data.products).to.not.eql(null);\r",
+              "});\r",
+              "\r",
+              "if (res.data && res.data.products) {\r",
+              "    pm.test(\"products edges is array\", function () {\r",
+              "        pm.expect(res.data.products.edges).to.be.an(\"array\");\r",
+              "    });\r",
+              "\r",
+              "    pm.test(\"product list can be queried\", function () {\r",
+              "        pm.expect(res.data.products.edges.length).to.be.at.least(0);\r",
+              "    });\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer  {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"query { products(first: 5, channel: \\\"{{channel}}\\\") { edges { node { id name slug } } } }\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09_product_variants_query",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response has no graphql errors\", function () {\r",
+              "    pm.expect(res.errors, JSON.stringify(res.errors)).to.be.undefined;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"products exists\", function () {\r",
+              "    pm.expect(res.data.products).to.not.eql(null);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"products edges is array\", function () {\r",
+              "    pm.expect(res.data.products.edges).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "let variantId = null;\r",
+              "\r",
+              "for (const edge of res.data.products.edges) {\r",
+              "    const product = edge.node;\r",
+              "\r",
+              "    if (product.variants && product.variants.length > 0) {\r",
+              "        variantId = product.variants[0].id;\r",
+              "\r",
+              "        pm.environment.set(\"variant_id\", variantId);\r",
+              "        pm.environment.set(\"product_id\", product.id);\r",
+              "        pm.environment.set(\"product_name\", product.name);\r",
+              "\r",
+              "        break;\r",
+              "    }\r",
+              "}\r",
+              "\r",
+              "pm.test(\"at least one product variant exists\", function () {\r",
+              "    pm.expect(variantId).to.exist;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer  {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"query { products(first: 5, channel: \\\"{{channel}}\\\") { edges { node { id name slug variants { id name sku quantityAvailable pricing { price { gross { amount currency } } } } } } } }\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10_checkout_create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "pm.test(\"status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response has no graphql errors\", function () {\r",
+              "    pm.expect(res.errors, JSON.stringify(res.errors)).to.be.undefined;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"checkoutCreate exists\", function () {\r",
+              "    pm.expect(res.data.checkoutCreate).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"checkoutCreate has no business errors\", function () {\r",
+              "    pm.expect(res.data.checkoutCreate.errors).to.be.an(\"array\");\r",
+              "    pm.expect(res.data.checkoutCreate.errors.length).to.eql(0);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"checkout exists\", function () {\r",
+              "    pm.expect(res.data.checkoutCreate.checkout).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"checkout has id\", function () {\r",
+              "    pm.expect(res.data.checkoutCreate.checkout.id).to.exist;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"checkout has at least one line\", function () {\r",
+              "    pm.expect(res.data.checkoutCreate.checkout.lines).to.be.an(\"array\");\r",
+              "    pm.expect(res.data.checkoutCreate.checkout.lines.length).to.be.above(0);\r",
+              "});\r",
+              "\r",
+              "pm.environment.set(\"checkout_id\", res.data.checkoutCreate.checkout.id);\r",
+              "pm.environment.set(\"checkout_token\", res.data.checkoutCreate.checkout.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer  {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"mutation { checkoutCreate(input: { channel: \\\"{{channel}}\\\", email: \\\"admin@example.com\\\", lines: [{ variantId: \\\"{{variant_id}}\\\", quantity: 1 }] }) { checkout { id token email lines { id quantity variant { id name sku } } totalPrice { gross { amount currency } } } errors { field message code } } }\"\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}",
+          "host": [
+            "{{base_url}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "const baseUrl = pm.environment.get(\"base_url\");\r",
+          "const email = pm.environment.get(\"admin_email\") || \"admin@example.com\";\r",
+          "const password = pm.environment.get(\"admin_password\") || \"admin\";\r",
+          "\r",
+          "pm.sendRequest({\r",
+          "    url: baseUrl,\r",
+          "    method: \"POST\",\r",
+          "    header: {\r",
+          "        \"Content-Type\": \"application/json\"\r",
+          "    },\r",
+          "    body: {\r",
+          "        mode: \"raw\",\r",
+          "        raw: JSON.stringify({\r",
+          "            query: `mutation {\r",
+          "                tokenCreate(email: \"${email}\", password: \"${password}\") {\r",
+          "                    token\r",
+          "                    refreshToken\r",
+          "                    user {\r",
+          "                        id\r",
+          "                        email\r",
+          "                    }\r",
+          "                    errors {\r",
+          "                        field\r",
+          "                        message\r",
+          "                        code\r",
+          "                    }\r",
+          "                }\r",
+          "            }`\r",
+          "        })\r",
+          "    }\r",
+          "}, function (err, res) {\r",
+          "    if (err) {\r",
+          "        console.log(\"Auto login request failed:\", err);\r",
+          "        return;\r",
+          "    }\r",
+          "\r",
+          "    const json = res.json();\r",
+          "\r",
+          "    if (\r",
+          "        json.data &&\r",
+          "        json.data.tokenCreate &&\r",
+          "        json.data.tokenCreate.token\r",
+          "    ) {\r",
+          "        pm.environment.set(\"access_token\", json.data.tokenCreate.token);\r",
+          "        pm.environment.set(\"refresh_token\", json.data.tokenCreate.refreshToken);\r",
+          "        console.log(\"Auto login success, token saved.\");\r",
+          "    } else {\r",
+          "        console.log(\"Auto login failed:\", JSON.stringify(json));\r",
+          "    }\r",
+          "});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

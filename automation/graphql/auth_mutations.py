@@ -1,0 +1,13 @@
+TOKEN_CREATE_MUTATION = """
+mutation TokenCreate($email: String!, $password: String!) {
+  tokenCreate(email: $email, password: $password) {
+    token
+    refreshToken
+    errors {
+      field
+      message
+      code
+    }
+  }
+}
+"""
