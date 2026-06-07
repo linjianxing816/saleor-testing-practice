@@ -9,7 +9,7 @@
 | 接口测试 | Postman + GraphQL | 10 | 100% |
 | 接口自动化 | Python + requests + pytest | 13 | 100% |
 | 性能测试 | Apache JMeter | 10 | 0% 错误率 |
-| UI 自动化 | Python + Selenium + pytest | 5 | 100% |
+| UI 自动化 | Python + Selenium + pytest | 6 | 100% |
 | 手动功能测试 | 测试用例设计 | 15 | 100% |
 
 ## 项目结构
@@ -136,7 +136,7 @@ jmeter -n -t performance/10_混合业务场景压测.jmx -l results.jtl -e -o re
 | JM-09 | 购物车链路压测 | 完整购物车流程并发 |
 | JM-10 | 混合业务场景压测 | 多接口混合负载 |
 
-### UI 自动化测试 (5 用例)
+### UI 自动化测试 (6 用例)
 
 基于 Selenium + pytest，验证 Saleor Dashboard 的核心操作：
 
@@ -144,9 +144,10 @@ jmeter -n -t performance/10_混合业务场景压测.jmx -l results.jtl -e -o re
 |------|---------|------|
 | UI-01 | Dashboard 登录 | 自动登录并验证跳转成功 |
 | UI-02 | Products 入口冒烟 | 验证商品管理页面可正常进入 |
-| UI-03 | 创建商品弹窗 | 打开 Create Product 弹窗并截图 |
-| UI-04 | 搜索输入 | 搜索框输入与清空功能验证 |
-| UI-05 | 页面滚动 | 验证页面滚动到底部无异常 |
+| UI-03 | Products 页面固定元素检查 | 验证 Create 按钮和搜索框存在 |
+| UI-04 | 创建商品弹窗 | 打开 Create Product 弹窗并截图 |
+| UI-05 | 搜索输入 | 搜索框逐字符输入验证 |
+| UI-06 | 页面滚动 | 分步滚动到底部并验证位置 |
 
 ### 手动功能测试 (15 用例)
 
